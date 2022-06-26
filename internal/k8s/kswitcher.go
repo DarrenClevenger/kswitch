@@ -34,9 +34,12 @@ func GetCurrentCluster() string {
 	return "Unknown"
 }
 
+func SetCurrentClusterContext(cluster_name string) {
+}
+
 func GetClusterNames() []Cluster {
 
-	clusters := make([]Cluster, 0)
+	var clusters []Cluster
 
 	f, err := os.Open(os.Getenv("KUBECONFIG"))
 	if err != nil {
@@ -45,8 +48,6 @@ func GetClusterNames() []Cluster {
 
 	scanner := bufio.NewScanner(f)
 
-	var newClusterToken bool
-
 	var cluster Cluster
 
 	for scanner.Scan() {
@@ -54,19 +55,16 @@ func GetClusterNames() []Cluster {
 		line := scanner.Text()
 		line = strings.TrimSpace(line)
 
-		// Check to see if we are in - context. If so we are in
-		// a cluster block.
-		if strings.HasPrefix(line, "- context:") {
-			newClusterToken = true
-			cluster = Cluster{}
-		}
-
-		if newClusterToken && strings.HasPrefix(line, "cluster") {
+		if strings.HasPrefix(line, "cluster:") {
 
 			line = strings.ReplaceAll(line, "cluster:", "")
-			if line != "" {
-				line = strings.TrimSpace(line)
-				cluster.Name = line
+			line = strings.TrimSpace(line)
+			line = strings.ReplaceAll(line, "\"", "")
+
+			if len(line) > 0 {
+				cluster = Cluster{
+					Name: line,
+				}
 				clusters = append(clusters, cluster)
 			}
 		}
