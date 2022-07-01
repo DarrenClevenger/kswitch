@@ -7,5 +7,5 @@ clean:
 test:
 	go test ./... -v
 
-run:
+run: build
 	go run cmd/main.go

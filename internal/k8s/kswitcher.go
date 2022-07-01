@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"os/exec"
 )
 
 type Cluster struct {
@@ -34,7 +36,15 @@ func GetCurrentCluster() string {
 	return "Unknown"
 }
 
-func SetCurrentClusterContext(cluster_name string) {
+func SetCurrentClusterContext(cluster_name string) error {
+
+	cmd := exec.Command("kubectl", "config", "use-context", cluster_name)
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func GetClusterNames() []Cluster {
@@ -68,10 +78,6 @@ func GetClusterNames() []Cluster {
 				clusters = append(clusters, cluster)
 			}
 		}
-	}
-
-	for _, c := range clusters {
-		fmt.Println(c.Name)
 	}
 
 	return clusters

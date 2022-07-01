@@ -15,3 +15,11 @@ func TestGetCurrentCluster(t *testing.T) {
 		t.Error("expected a cluster name but received an empty string.")
 	}
 }
+
+func TestRunSetContextCommand(t *testing.T) {
+
+	err := SetCurrentClusterContext("odjrs-prbuild-cni-us-aks")
+	if err != nil {
+		t.Errorf("failed to run the switch context command. %v", err)
+	}
+}

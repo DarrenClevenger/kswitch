@@ -7,25 +7,28 @@ import (
 	"github.com/rivo/tview"
 )
 
+var app *tview.Application
 var main *tview.Grid
 var title *tview.TextView
 var current_cluster_text *tview.TextView
 var gutter_right *tview.Box
 var gutter_left *tview.Box
 var cluster_list *tview.List
-var footer *tview.Box
+var footer *tview.TextView
 
-func RenderMainWindow() *tview.Grid {
+func RenderMainWindow(application *tview.Application) *tview.Grid {
+
+	app = application
 
 	// Create the main title
-	title := tview.NewTextView()
+	title = tview.NewTextView()
 	title.SetText("K8s Selector")
 	title.SetTextColor(tcell.ColorDeepSkyBlue)
 
 	//Right, left, footer padding border
 	gutter_right = tview.NewBox()
 	gutter_left = tview.NewBox()
-	footer = tview.NewBox()
+	footer = tview.NewTextView()
 
 	//Create the current cluster label.
 	current_cluster_text = tview.NewTextView()
@@ -33,7 +36,7 @@ func RenderMainWindow() *tview.Grid {
 	current_cluster_text.SetTextColor(tcell.ColorLightYellow)
 
 	// Set the currently selected cluster.
-	SetCurrentCluster()
+	cluster_name := SetCurrentCluster()
 
 	//Create the cluster List
 	cluster_list = tview.NewList()
@@ -46,10 +49,10 @@ func RenderMainWindow() *tview.Grid {
 	cluster_list.ShowSecondaryText(false)
 	cluster_list.SetBorderAttributes(tcell.AttrDim)
 
-	fillClustersList()
+	fillClustersList(cluster_name)
 
-	main := tview.NewGrid()
-	main.SetRows(2, 0, 2)
+	main = tview.NewGrid()
+	main.SetRows(2, 0, 4)
 	main.SetColumns(6, 0, 0, 6)
 	main.SetBorder(true)
 
@@ -60,7 +63,27 @@ func RenderMainWindow() *tview.Grid {
 	main.AddItem(cluster_list, 1, 1, 1, 2, 0, 0, true)
 	main.AddItem(footer, 2, 0, 1, 4, 10, 0, false)
 
+	main.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+
+		switch event.Rune() {
+		case 'r':
+			fillClustersList("")
+			return event
+		case 'd':
+			getClusterDetails()
+			return event
+		}
+
+		return event
+	})
+
+	footer.SetText("\n\t(q) Quit\t(r) Refresh Clusters")
+
 	return main
+}
+
+func getClusterDetails() {
+
 }
 
 func onItemSelected() {
@@ -68,21 +91,35 @@ func onItemSelected() {
 	idx := cluster_list.GetCurrentItem()
 	if idx != -1 {
 		cluster_name, _ := cluster_list.GetItemText(idx)
-		k8s.SetCurrentClusterContext(cluster_name)
+		err := k8s.SetCurrentClusterContext(cluster_name)
+		if err != nil {
+			panic(err)
+		}
+
+		SetCurrentCluster()
 	}
 }
 
-func SetCurrentCluster() {
+func SetCurrentCluster() string {
 
 	current_cluster := k8s.GetCurrentCluster()
 	current_cluster_text.SetText(current_cluster)
+
+	return current_cluster
 }
 
-func fillClustersList() {
+func fillClustersList(cluster_name string) {
 
 	list := k8s.GetClusterNames()
+	cluster_list.Clear()
 
-	for _, c := range list {
+	for i, c := range list {
 		cluster_list.AddItem(c.Name, "", 0, onItemSelected)
+		if cluster_name != "" {
+			if cluster_name == c.Name {
+				cluster_list.SetCurrentItem(i)
+			}
+		}
 	}
+
 }

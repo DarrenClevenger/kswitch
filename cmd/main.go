@@ -3,35 +3,31 @@ package main
 import (
 	"darrenclevenger/kswitch/internal/ui"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 var app *tview.Application
 
-//var grid *tview.Grid
-
 func main() {
 
 	app = tview.NewApplication()
 
-	//header := internal.GetHeader()
-	//header := internal.GetHeaderGrid()
-	//list := internal.GetClusterSelectionList()
-	//ui.RenderMainWindow()
+	app.SetBeforeDrawFunc(func(screen tcell.Screen) bool {
+		screen.Clear()
+		return false
+	})
 
-	//grid = tview.NewGrid().
-	//	SetRows(2, 0).
-	//	SetColumns(0).
-	//	SetBorders(true).
-	//	AddItem(header, 0, 0, 1, 3, 0, 0, false).
-	//	AddItem(list, 1, 0, 1, 3, 40, 0, true)
+	main := ui.RenderMainWindow(app)
 
-	////grid = tview.NewGrid()
-	////grid.SetRows(20)
-	////grid.SetColumns(100)
-	////grid.SetBorders(true)
-	////grid.AddItem(header, 0, 0, 0, 0, 20, 20, false)
+	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 
-	main := ui.RenderMainWindow()
+		if event.Rune() == 'q' {
+			app.Stop()
+		}
+
+		return event
+	})
+
 	app.SetRoot(main, true).SetFocus(main).Run()
 }
