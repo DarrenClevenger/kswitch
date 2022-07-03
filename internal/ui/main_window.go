@@ -69,9 +69,6 @@ func RenderMainWindow(application *tview.Application) *tview.Grid {
 		case 'r':
 			fillClustersList("")
 			return event
-		case 'd':
-			getClusterDetails()
-			return event
 		}
 
 		return event
@@ -80,10 +77,6 @@ func RenderMainWindow(application *tview.Application) *tview.Grid {
 	footer.SetText("\n\t(q) Quit\t(r) Refresh Clusters")
 
 	return main
-}
-
-func getClusterDetails() {
-
 }
 
 func onItemSelected() {
@@ -121,5 +114,4 @@ func fillClustersList(cluster_name string) {
 			}
 		}
 	}
-
 }
